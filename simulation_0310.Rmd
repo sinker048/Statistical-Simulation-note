@@ -1,0 +1,105 @@
+---
+title: 'Simulation Independence Test_0310'
+author: "政大統碩一林澤慶"
+output:
+  html_document:
+    theme: united
+    toc: TRUE
+    toc_float: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Gaps Test
+
+選取介於$0,1$間的兩個數 $0 < \alpha < \beta < 1$，再考慮介於$\alpha$與$\beta$間的亂數。介於$\alpha$與$\beta$間的亂數間隔應與幾何分配有關，間隔個數 
+
+$P(K=k)=(\beta-\alpha)*(1-(\beta-\alpha))^k,k=0,1,...$
+
+```{r,comment=NA}
+x = runif(1000) #產生1000個Uniform(0,1)數列
+hist(x) #畫直方圖
+```
+
+```{r,comment=NA}
+x1 = c(1:1000)*( x > 0.5 & x < 0.9 ) #找出x介在0.5和0.9之間的指標
+x2 = x1[x1 > 0]
+x2 #顯現x介在0.5和0.9之間的指標
+```
+```{r,comment=NA}
+x3=x2[-1]-x2[-length(x2)] #比較兩兩之間差異幾個數字
+table(x3) #做差異個數的表格
+```
+# Up-and-Down Test
+
+比較連續兩個亂數間的大小，以正號(+或1)表示遞增、負號(–或0)表示遞減。
+
+```{r,comment=NA}
+x = runif(1000) #產生1000個Uniform(0,1)數列
+x3 = x[-1] > x[-1000] #比較前後數的大小關係
+x4= x3*1 #轉換成0和1的數
+x4 #1表示後面比較大，0表示後面比較小。
+```
+
+```{r,comment=NA}
+x5=1*(x4[-1]!=x4[-999]) #表示有幾個尖閣
+u=sum(x5)+1 #表示有多少RUN
+u #表示有多少RUN
+z=(u-(2*1000-1)/3)/((16*1000-29)/90)^0.5 #求Z值
+```
+
+檢定統計量 $Z=\frac{U-(2N-1)/3}{[(16N-29)/90]^{0.5}}\sim N(0,1)$
+
+其中 $U=`r u`,N=1000$
+
+檢定統計量 $Z=`r z`$
+
+# Permutation Test
+
+將亂數依先後順序每$k$個一組，$(X_1,X_2,X_3,...,X_k),(X_{k+1},X_{k+2},...),...$每組再依大小順序寫出類似$(1,2,...,k)$的格式，共有$k!$種可能性。
+
+```{r,comment=NA}
+x=runif(30) #產生30個Uniform(0,1)數列
+x0=matrix(x,ncol=10,byrow=F) #每三個數字形成一組，總共有10組
+x0 #顯示矩陣 
+```
+
+```{r,comment=NA}
+y0=apply(x0, 2, rank)  #針對每一行資料做排序
+y1=y0[1,]+y0[2,]*10+y0[3,]*100 #表示每組的排序
+table(y1) #看每種排序各有幾個
+```
+
+# Coupon Collectors’ Test
+
+假設亂數可分類為$k$種可能，計算每一種可能都出現時所需的樣本數。
+
+需要的樣本數為$(k,k+1,k+2,…)$。
+
+```{r,comment=NA}
+set.seed(10)  #設定種子為10
+a=sample(1:5,size = 30,T) #從1到5中產生30個數字(取出放回)
+k=c() #收集每種可能皆出現的樣本數
+while (length(a)>=5) {
+  c=c()
+  for (i in 1:5) {
+    c=c(c,which(a==i)[1])  #判斷每一個數字出現的位置
+  }
+  k=c(k,max(c)) #收集K
+  a=a[-c(1:max(c))]  #去除皆出現可能的樣本
+}
+print(k) #表示出每一個K的數字
+```
+
+# Comparison
+
+|Test|優點|缺點|建議|
+|:---|---:|---:|---:|
+|Gaps Test|所需樣本數少|只能看短程的趨勢|$\beta$和$\alpha$差約0.5|
+|Up-and-Down Test|所需樣本數少|只能看短程的趨勢|無|
+|Permutation Test|可以看長期的趨勢|所需樣本數大|計算複雜|
+|Coupon Collectors’ Test|可以看長期的趨勢|所需樣本數大|計算複雜|
+
+
